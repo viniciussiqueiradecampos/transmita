@@ -11,6 +11,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,11 +52,16 @@
                 <h2 class="form-title">Fale conosco!</h2>
 
                 <form id="contactForm">
+                    <!-- Web3Forms Config -->
+                    <input type="hidden" name="access_key" value="58774786-896e-4903-883a-14dcf86f8516">
+                    <input type="hidden" name="from_name" value="Site Transmita">
+                    <input type="hidden" name="to_email" value="vinicius@transmitadigital.com.br">
+
                     <div class="row">
                         <div class="col-12">
                             <div class="input-group-custom">
                                 <i data-lucide="user" class="input-icon"></i>
-                                <input type="text" id="name" class="form-control custom-input"
+                                <input type="text" name="name" id="name" class="form-control custom-input"
                                     placeholder="Seu nome completo" required>
                             </div>
                         </div>
@@ -59,14 +71,14 @@
                         <div class="col-md-7">
                             <div class="input-group-custom">
                                 <i data-lucide="phone" class="input-icon"></i>
-                                <input type="text" id="phone" class="form-control custom-input"
+                                <input type="text" name="phone" id="phone" class="form-control custom-input"
                                     placeholder="Telefone ou WhatsApp" required>
                             </div>
                         </div>
                         <div class="col-md-5">
                             <div class="input-group-custom">
                                 <i data-lucide="briefcase" class="input-icon"></i>
-                                <input type="text" id="company" class="form-control custom-input"
+                                <input type="text" name="company" id="company" class="form-control custom-input"
                                     placeholder="Sua empresa" required>
                             </div>
                         </div>
@@ -76,7 +88,7 @@
                         <div class="col-12">
                             <div class="input-group-custom textarea-custom">
                                 <i data-lucide="message-square" class="input-icon"></i>
-                                <textarea id="message" class="form-control custom-input"
+                                <textarea name="message" id="message" class="form-control custom-input"
                                     placeholder="Conte-nos sobre sua ideia..." required></textarea>
                             </div>
                         </div>
@@ -99,19 +111,47 @@
     <script>
         lucide.createIcons();
 
-        document.getElementById('contactForm').addEventListener('submit', function (e) {
+        const form = document.getElementById('contactForm');
+        const btn = form.querySelector('.btn-send');
+
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const company = document.getElementById('company').value;
-            const message = document.getElementById('message').value;
+            btn.disabled = true;
+            btn.innerHTML = 'ENVIANDO... <div class="spinner-border spinner-border-sm text-light ms-2" role="status"></div>';
 
-            const emailTo = "vinicius@transmitadigital.com.br";
-            const subject = "Novo contato via site - " + company;
-            const body = `Nome: ${name}\nTelefone: ${phone}\nEmpresa: ${company}\nMensagem: ${message}`;
+            const formData = new FormData(form);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
 
-            window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: json
+            })
+                .then(async (response) => {
+                    let res = await response.json();
+                    if (response.status == 200) {
+                        btn.innerHTML = 'ENVIADO COM SUCESSO! <i data-lucide="check"></i>';
+                        btn.classList.remove('btn-send');
+                        btn.style.backgroundColor = '#28a745';
+                        btn.style.color = '#fff';
+                        lucide.createIcons();
+                        form.reset();
+                    } else {
+                        console.log(response);
+                        btn.innerHTML = 'ERRO AO ENVIAR';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    btn.innerHTML = 'ERRO DE CONEXÃO';
+                    btn.disabled = false;
+                });
         });
     </script>
     <!-- Bootstrap Bundle with Popper -->
