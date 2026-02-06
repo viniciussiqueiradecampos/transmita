@@ -63,12 +63,12 @@ html {
 }
 
 .hero-logo {
-    height: 72px;
+    max-height: 72px;
     width: auto;
     object-fit: contain;
     /* Prevents distortion */
     align-self: flex-start;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     animation: fadeInSlideDown 0.8s ease-out;
 }
 
